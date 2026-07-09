@@ -1,3 +1,4 @@
+import streamlit as st
 from dotenv import load_dotenv
 import os
 
@@ -10,12 +11,16 @@ from typing import List, Optional
 
 load_dotenv()
 
+st.set_page_config(page_title="Movie Information Extractor", page_icon="🎬")
+
+st.title("🎬 Movie Information Extractor")
+st.write("Paste a movie description below and extract structured information.")
+
 model = ChatMistralAI(
     model="mistral-small-latest",
     temperature=0.7,
     api_key=os.getenv("MISTRAL_API_KEY"),
 )
-
 
 class Movie(BaseModel):
     title: str
@@ -25,7 +30,6 @@ class Movie(BaseModel):
     cast: List[str]
     rating: Optional[float]
     summary: str
-
 
 parser = PydanticOutputParser(pydantic_object=Movie)
 
@@ -44,15 +48,30 @@ Extract movie information from the paragraph.
     )
 ])
 
-paragraph = input("Enter movie paragraph: ")
+paragraph = st.text_area(
+    "Movie Paragraph",
+    height=250,
+    placeholder="Paste a movie description here..."
+)
 
-final_prompt = prompt.invoke({
-    "paragraph": paragraph,
-    "format_instructions": parser.get_format_instructions()
-})
+if st.button("Extract Information"):
+    if paragraph.strip() == "":
+        st.warning("Please enter a movie paragraph.")
+    else:
+        with st.spinner("Extracting information..."):
+            try:
+                final_prompt = prompt.invoke({
+                    "paragraph": paragraph,
+                    "format_instructions": parser.get_format_instructions()
+                })
 
-response = model.invoke(final_prompt)
+                response = model.invoke(final_prompt)
 
-movie_data = parser.parse(response.content)
+                movie_data = parser.parse(response.content)
 
-print(movie_data)
+                st.success("Extraction Complete!")
+
+                st.json(movie_data.model_dump())
+
+            except Exception as e:
+                st.error(f"Error: {e}")
