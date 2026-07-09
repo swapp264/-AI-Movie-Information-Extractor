@@ -6,17 +6,6 @@ Simply paste a movie paragraph, click **Extract Information**, and the applicati
 
 ---
 
-## 📸 Demo
-
-> Add screenshots here after running the project.
-
-### Home Page
-![Home](assets/home.png)
-
-### Extracted Result
-![Result](assets/result.png)
-
----
 
 ## ✨ Features
 
